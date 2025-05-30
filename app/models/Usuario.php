@@ -176,4 +176,31 @@ class Usuario extends Model {
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc() ?: [];
     }
+
+    public function verificarCredenciales(string $email, string $password)
+    {
+        // 1) Buscamos al usuario por email
+        $stmt = $this->db->prepare("
+            SELECT 
+              id_usuario, 
+              nombre_usuario, 
+              password_usuario, 
+              id_rol
+            FROM usuarios
+            WHERE email_usuario = ?
+        ");
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+
+        // 2) Si existe y la contraseña batea con el hash
+        if ($user && password_verify($password, $user['password_usuario'])) {
+            // Quítale el hash antes de devolverlo
+            unset($user['password_usuario']);
+            return $user;
+        }
+
+        // 3) No coincide
+        return false;
+    }
 }

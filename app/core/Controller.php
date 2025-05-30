@@ -5,6 +5,7 @@ class Controller {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        
 
         // 2) Lista de controladores públicos que NO requieren login
         $publicControllers = [

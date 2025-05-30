@@ -28,9 +28,7 @@ class LoginController extends Controller {
         header('Location: ' . url('index.php?url=Login/index'));
     }
     exit;
-}
-
-
+    }
     public function logout() {
         // Aquí irá la lógica de logout
         header('Location: ' . url('index.php?url=Login/index'));
