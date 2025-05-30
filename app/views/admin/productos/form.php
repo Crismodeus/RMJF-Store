@@ -72,8 +72,7 @@ $isEdit = !empty($producto);
     <?php endif; ?>
 
   <div class="d-flex justify-content-end">
-    <button class="btn btn-secondary me-2" 
-      onclick="history.back(); return false;">Cancelar</button>
+    <button class="btn btn-secondary me-2" onclick="history.back(); return false;">Cancelar</button>
     <button type="submit" class="btn btn-success">Guardar</button>
   </div>
 </form>

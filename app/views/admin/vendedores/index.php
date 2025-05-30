@@ -13,7 +13,11 @@
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>ID</th><th>Nombre</th><th>Email</th><th>Cédula</th><th></th>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Email</th>
+      <th>Cédula</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -35,3 +39,5 @@
     <?php endforeach; ?>
   </tbody>
 </table>
+<br>
+<button class="btn btn-secondary me-2" onclick="history.back(); return false;">Regresar</button>

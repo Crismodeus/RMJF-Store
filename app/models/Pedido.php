@@ -250,4 +250,51 @@ class Pedido extends Model {
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
   }
+
+  /**
+   * Recupera UN pedido pendiente de pago, sólo si pertenece a ese cliente.
+   */
+  public function obtenerPedidoPorIdCliente(int $idPedido, int $idCliente): ?array
+  {
+      $stmt = $this->db->prepare("
+          SELECT * 
+          FROM pedidos 
+          WHERE id_pedido = ? 
+            AND id_usuario = ? 
+            AND estado_pedido = 'Pendiente'
+      ");
+      $stmt->bind_param('ii', $idPedido, $idCliente);
+      $stmt->execute();
+      $res = $stmt->get_result()->fetch_assoc();
+      return $res ?: null;
+  }
+
+    /**
+   * Obtiene todos los pedidos con estado 'Pendiente'.
+   * Si pasas $idVendedor sólo trae los de ese vendedor.
+   *
+   * @param int|null $idVendedor
+   * @return array
+   */
+  public function obtenerPendientes(?int $idVendedor = null): array
+  {
+      // Base de la consulta
+      $sql = "
+        SELECT p.*, u.nombre_usuario AS cliente
+        FROM pedidos p
+        JOIN usuarios u ON p.id_usuario = u.id_usuario
+        WHERE p.estado_pedido = 'Pendiente'
+      ";
+
+      if ($idVendedor) {
+          $sql .= " AND p.id_vendedor = ?";
+          $stmt = $this->db->prepare($sql);
+          $stmt->bind_param('i', $idVendedor);
+      } else {
+          $stmt = $this->db->prepare($sql);
+      }
+
+      $stmt->execute();
+      return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+  }
 }

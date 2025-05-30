@@ -60,3 +60,5 @@
     <?php endforeach; ?>
   </tbody>
 </table>
+<br>
+<button class="btn btn-secondary me-2" onclick="history.back(); return false;">Regresar</button>

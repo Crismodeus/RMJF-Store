@@ -10,7 +10,15 @@ if (isset($_SESSION['carrito']) && is_array($_SESSION['carrito'])) {
         $cartCount += $item['cantidad'];
     }
 }
-?>
+/* 
+if ($_SESSION['usuario']['id_rol'] === 3): ?>
+  <a href="<?= url('index.php?url=Pago/paypal&pedido='.$p['id_pedido']) ?>"
+     class="btn btn-success btn-sm">
+    Pagar
+  </a>*/
+
+?> 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

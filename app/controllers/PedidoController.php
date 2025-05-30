@@ -103,4 +103,59 @@ class PedidoController extends Controller {
         'detalles' => $detalles
     ]);
     }
+
+    public function nuevo() {
+        // Sólo Admin (1) o Vendedor (2)
+        $rol = $_SESSION['usuario']['id_rol'] ?? 0;
+        if (!in_array($rol, [1,2], true)) {
+            header('Location:' . url('index.php?url=Dashboard/index'));
+            exit;
+        }
+
+        // Cargamos lista de clientes
+        $clientes = $this->model('Usuario')->obtenerClientes();
+        $this->view('pedido/nuevo', ['clientes' => $clientes]);
+    }
+
+    /**
+     * Procesa el POST de nuevo(): arranca la venta.
+     */
+    public function iniciar() {
+        $rol = $_SESSION['usuario']['id_rol'] ?? 0;
+        if (!in_array($rol, [1,2], true)) {
+            header('Location:' . url('index.php?url=Dashboard/index'));
+            exit;
+        }
+
+        $idCliente  = (int)($_POST['cliente'] ?? 0);
+        $idVendedor = $_SESSION['usuario']['id_usuario'];
+
+        if (! $idCliente) {
+            $_SESSION['error'] = 'Debes seleccionar un cliente.';
+            header('Location:' . url('index.php?url=Pedido/nuevo'));
+            exit;
+        }
+        // Guardamos en sesión
+        $_SESSION['venta'] = [
+            'cliente'  => $idCliente,
+            'vendedor' => $idVendedor
+        ];
+        // Limpiamos carrito actual
+        unset($_SESSION['carrito']);
+
+        // Redirigimos al catálogo para que añada productos a la venta
+        header('Location:' . url('index.php?url=Catalogo/index'));
+        exit;
+    }
+
+    //Recuperar pedido por ID de Pedido
+    public function obtenerPedidoPorId(int $idPedido): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM pedidos WHERE id_pedido = ?");
+        $stmt->bind_param('i', $idPedido);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
+        return $res ?: null;
+    }
+
 }

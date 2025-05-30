@@ -1,6 +1,52 @@
 <?php
 // app/views/carrito.php
 ?>
+<?php $rol = $_SESSION['usuario']['id_rol'] ?? 0; ?>
+
+<!-- … listado de ítems … -->
+<div class="d-flex justify-content-end mt-4">
+  <?php if (in_array($rol, [1,2], true)): ?>
+    <!-- Admin/Vendedor: botón Registrar Orden -->
+    <button id="btnRegistrarOrden" class="btn btn-success">
+      Registrar Orden
+    </button>
+  <?php else: ?>
+    <!-- Cliente: flujo PayPal -->
+    <div id="paypal-button-container"></div>
+  <?php endif; ?>
+</div>
+
+<?php if (in_array($rol, [1,2], true)): ?>
+<script>
+document.getElementById('btnRegistrarOrden').addEventListener('click', function(e) {
+  e.target.disabled = true;
+  fetch('index.php?url=Carrito/registrar', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('✅ Pedido registrado con éxito (ID ' + data.idPedido + ')');
+        window.location.href = 'index.php?url=Dashboard/index';
+      } else {
+        alert('❌ ' + data.error);
+        e.target.disabled = false;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('❌ Error de red. Intenta de nuevo.');
+      e.target.disabled = false;
+    });
+});
+</script>
+<?php else: ?>
+<!-- Aquí carga tu SDK de PayPal y el script paypal.Buttons(...) como antes -->
+<script src="https://www.paypal.com/sdk/js?client-id=TU_CLIENT_ID&currency=USD"></script>
+<script>
+  paypal.Buttons({ /* createOrder, onApprove, onError */ })
+        .render('#paypal-button-container');
+</script>
+<?php endif; ?>
+
 <h2 class="mb-4">🛒 Tu Carrito</h2>
 
 <?php if (isset($_SESSION['success'])): ?>

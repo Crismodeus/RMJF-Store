@@ -59,4 +59,58 @@ class CarritoController extends Controller {
         header('Location: ' . url('index.php?url=Carrito/index'));
         exit;
     }
+
+    //Funciones para Pedido Vendedores/Admin
+
+    public function registrar() {
+    header('Content-Type: application/json');
+
+     $rol = $_SESSION['usuario']['id_rol'] ?? 0;
+    if (!in_array($rol, [1,2], true)) {
+        header('Content-Type: application/json');
+        echo json_encode([
+          'success' => false,
+          'error'   => 'No tienes permiso para registrar ventas directamente.'
+        ]);
+        exit;
+    }
+    // 1) Client ID y (opcional) vendedor si venimos de Dashboard
+    $usuario    = $_SESSION['usuario'] ?? null;
+    $venta      = $_SESSION['venta']   ?? null;
+    $idCliente  = $venta['cliente']  ?? $usuario['id_usuario'];
+    $idVendedor = $venta['vendedor'] ?? null;
+
+    // 2) Carrito en sesión
+    $carrito = $_SESSION['carrito'] ?? [];
+    if (empty($carrito)) {
+      echo json_encode(['success'=>false,'error'=>'El carrito está vacío.']);
+      return;
+    }
+
+    // 3) Calcular total
+    $total = array_reduce($carrito, fn($sum,$itm)=> $sum + $itm['precio']*$itm['cantidad'], 0);
+
+    try {
+      $pm = $this->model('Pedido');
+      // crea pedido (cliente, vendedor, total)
+      $idPedido = $pm->crearPedido($idCliente, $idVendedor, $total);
+
+      // agrega detalles
+      foreach ($carrito as $it) {
+        $pm->agregarDetalle(
+          $idPedido,
+          $it['id'],        // id_producto_medida
+          $it['cantidad'],
+          $it['precio']
+        );
+      }
+
+      // limpiamos contexto de venta
+      unset($_SESSION['carrito'], $_SESSION['venta']);
+
+      echo json_encode(['success'=>true,'idPedido'=>$idPedido]);
+    } catch (Exception $e) {
+      echo json_encode(['success'=>false,'error'=>$e->getMessage()]);
+    }
+  }
 }

@@ -3,7 +3,7 @@
 
 <div class="row">
   <div class="col">
-    <a class="btn btn-success" href="<?= url('index.php?url=Pedidos/nuevo') ?>">
+    <a class="btn btn-success" href="<?= url('index.php?url=Pedido/nuevo') ?>">
       🛒 Realizar Venta
     </a>
   </div>
@@ -12,6 +12,11 @@
       📊 Mis Ventas
     </a>
   </div>
+  <div class="col">
+      <a class="btn btn-warning" href="<?= url('index.php?url=PedidosPendientes/index') ?>">
+        🕒 Pedidos Pendientes
+      </a>
+    </div>
 </div>
 
 <h2 class="mt-4">Últimas Ventas (Mes Actual)</h2>
