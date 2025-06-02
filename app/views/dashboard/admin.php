@@ -40,11 +40,11 @@
         📊 Ventas por Producto
         </a>
     </div>
-    <div class="col d-grid">
+<!--     <div class="col d-grid">
          <a class="btn btn-info" href="<?= url('index.php?url=Reportes/especialidad') ?>">
         🏥 Ventas por Especialidad
         </a>
-    </div>
+    </div> -->
     <div class="col d-grid">
          <a class="btn btn-info" href="<?= url('index.php?url=Reportes/vendedor') ?>">
         👤 Ventas por Vendedor

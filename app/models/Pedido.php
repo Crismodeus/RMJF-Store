@@ -99,12 +99,14 @@ class Pedido extends Model {
               p.id_pedido,
               u.nombre_usuario AS cliente,
               p.total_pedido,
-              DATE_FORMAT(p.fecha_pedido, '%Y-%m-%d %H:%i') AS fecha_pedido
+              DATE_FORMAT(p.fecha_pedido, '%Y-%m-%d %H:%i') AS fecha_pedido,
+              p.estado_pedido
             FROM pedidos p
             JOIN usuarios u ON p.id_usuario = u.id_usuario
             WHERE p.id_vendedor = ?
               AND MONTH(p.fecha_pedido) = ?
               AND YEAR(p.fecha_pedido) = ?
+              AND p.estado_pedido = 'Pagado'
             ORDER BY p.fecha_pedido DESC
         ");
         $stmt->bind_param('iii', $idVendedor, $mes, $ano);
@@ -118,10 +120,11 @@ class Pedido extends Model {
      */
     public function getVentasPorMes(int $mes, int $ano): array {
         $stmt = $this->db->prepare("
-            SELECT IFNULL(SUM(total_pedido),0) AS total
-            FROM pedidos
+            SELECT p.estado_pedido, IFNULL(SUM(total_pedido),0) AS total
+            FROM pedidos p
             WHERE MONTH(fecha_pedido) = ?
               AND YEAR(fecha_pedido) = ?
+              AND p.estado_pedido = 'Pagado'
         ");
         $stmt->bind_param('ii', $mes, $ano);
         $stmt->execute();
@@ -136,9 +139,10 @@ class Pedido extends Model {
         YEAR(fecha_pedido)  AS ano,
         COUNT(*)            AS cantidad_pedidos,
         SUM(total_pedido)   AS total_ventas
-      FROM pedidos
+      FROM pedidos p
       WHERE MONTH(fecha_pedido) = ?
         AND YEAR(fecha_pedido)  = ?
+        AND p.estado_pedido = 'Pagado'
       GROUP BY YEAR(fecha_pedido), MONTH(fecha_pedido)
     ");
     $stmt->bind_param('ii', $mes, $ano);
@@ -153,25 +157,27 @@ class Pedido extends Model {
     public function reportePorProducto(?int $idVendedor, int $mes, int $ano): array {
         // Base de la consulta
         $sql = "
-          SELECT 
-            pm.id_producto_medida,
-            p.nombre_producto,
-            pm.nombre_medida,
-            SUM(d.cantidad_pedido) AS total_unidades,
-            SUM(d.cantidad_pedido * d.precio_pedido) AS total_ventas
-          FROM pedidos pe
-          JOIN detalles_pedidos d ON pe.id_pedido = d.id_pedido
-          JOIN producto_medidas pm ON d.id_producto_medida = pm.id_producto_medida
-          JOIN productos p       ON pm.id_producto           = p.id_producto
-          WHERE MONTH(pe.fecha_pedido) = ?
-            AND YEAR(pe.fecha_pedido)  = ?
+            SELECT 
+            pm.id_producto_medida, 
+            pe.nombre_producto, 
+            pm.nombre_medida, 
+            SUM(d.cantidad_pedido) AS total_unidades, 
+            SUM(d.cantidad_pedido * d.precio_pedido) AS total_ventas 
+            FROM pedidos p 
+            JOIN detalles_pedidos d ON p.id_pedido = d.id_pedido 
+            JOIN producto_medidas pm ON d.id_producto_medida = pm.id_producto_medida 
+            JOIN productos pe ON pm.id_producto = pe.id_producto 
+            WHERE 
+              MONTH(p.fecha_pedido) = ?
+              AND YEAR(p.fecha_pedido) = ? 
+              AND p.estado_pedido = 'Pagado' 
         ";
         // Si pasa idVendedor, lo filtramos
         if ($idVendedor) {
-            $sql .= " AND pe.id_vendedor = ?";
+            $sql .= " AND p.id_vendedor = ?";
         }
         $sql .= "
-          GROUP BY pm.id_producto_medida, p.nombre_producto, pm.nombre_medida
+          GROUP BY pm.id_producto_medida, pe.nombre_producto, pm.nombre_medida
           ORDER BY total_ventas DESC
         ";
 
@@ -186,23 +192,24 @@ class Pedido extends Model {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function reportePorEspecialidad(?int $idVendedor, int $mes, int $ano): array {
+    /* public function reportePorEspecialidad(?int $idVendedor, int $mes, int $ano): array {
     $sql = "
       SELECT 
         e.id_especialidad,
         e.nombre_especialidad,
         COUNT(*)            AS cantidad_pedidos,
         SUM(d.cantidad_pedido * d.precio_pedido) AS total_ventas
-      FROM pedidos pe
-      JOIN detalles_pedidos d ON pe.id_pedido = d.id_pedido
+      FROM pedidos p
+      JOIN detalles_pedidos d ON p.id_pedido = d.id_pedido
       JOIN producto_medidas pm   ON d.id_producto_medida = pm.id_producto_medida
-      JOIN productos_especialidades pe2 ON pm.id_producto = pe2.id_producto
-      JOIN especialidades e      ON pe2.id_especialidad = e.id_especialidad
-      WHERE MONTH(pe.fecha_pedido) = ?
-        AND YEAR(pe.fecha_pedido)  = ?
+      JOIN productos_especialidades p2 ON pm.id_producto = p2.id_producto
+      JOIN especialidades e      ON p2.id_especialidad = e.id_especialidad
+      WHERE MONTH(p.fecha_pedido) = ?
+        AND YEAR(p.fecha_pedido)  = ?
+        AND p.estado_pedido = 'Pagado'
     ";
     if ($idVendedor) {
-        $sql .= " AND pe.id_vendedor = ?";
+        $sql .= " AND p.id_vendedor = ?";
     }
     $sql .= "
       GROUP BY e.id_especialidad, e.nombre_especialidad
@@ -218,7 +225,7 @@ class Pedido extends Model {
     }
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-  }
+  } */
 
   public function reportePorVendedorGlobal(?int $idVendedor, int $mes, int $ano): array {
     $sql = "
@@ -229,8 +236,10 @@ class Pedido extends Model {
         SUM(p.total_pedido) AS total_ventas
       FROM pedidos p
       JOIN usuarios u ON p.id_vendedor = u.id_usuario
-      WHERE MONTH(p.fecha_pedido) = ?
+      WHERE 
+        MONTH(p.fecha_pedido) = ?
         AND YEAR(p.fecha_pedido)  = ?
+        AND p.estado_pedido = 'Pagado'
     ";
     if ($idVendedor) {
         $sql .= " AND p.id_vendedor = ?";

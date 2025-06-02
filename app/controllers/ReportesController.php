@@ -42,7 +42,7 @@ class ReportesController extends Controller {
     ]);
   }
 
-  public function especialidad() {
+  /* public function especialidad() {
     // Solo Admin (1) o Vendedor (2)
     $rol = $_SESSION['usuario']['id_rol'];
     if (!in_array($rol, [1,2], true)) {
@@ -63,7 +63,7 @@ class ReportesController extends Controller {
       'ano'   => $ano,
       'rol'   => $rol
     ]);
-    }
+    } */
 
     public function vendedor() {
     $rol = $_SESSION['usuario']['id_rol'];
