@@ -49,7 +49,7 @@ class Marca extends Model {
             VALUES (?, ?, ?)
         ";
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param('sss', $nombre, $url, $blob);
+        $stmt->bind_param('ssi', $nombre, $url, $blob);
         return $stmt->execute();
     }
 

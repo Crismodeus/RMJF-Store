@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../core/Model.php';
 
 class Producto extends Model {
-
+    protected $lastError = '';
     /**
      * Devuelve todas las especialidades.
      * @return array
@@ -83,102 +83,82 @@ class Producto extends Model {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-        /**
-     * Devuelve todos los productos (para admin).
-     */
+    public function getLastError(): string {
+        return $this->lastError;
+    }
+
     public function obtenerTodos(): array {
         $sql = "
-          SELECT
-            p.id_producto,
-            p.nombre_producto,
-            p.descripcion_producto,
-            p.id_marca,
-            p.imagen_producto,      -- URL de la imagen (campo VARCHAR o LONGBLOB convertido a texto)
-            p.imagen_blob,          -- BLOB real (si lo tienes)
-            m.nombre_marca
-          FROM productos p
-          JOIN marcas m ON p.id_marca = m.id_marca
-          ORDER BY p.nombre_producto
+          SELECT p.id_producto, p.nombre_producto, p.descripcion_producto, p.id_marca,
+                 p.imagen_producto, p.imagen_blob, m.nombre_marca
+            FROM productos p
+            JOIN marcas m ON p.id_marca = m.id_marca
+           ORDER BY p.nombre_producto
         ";
         $res = $this->db->query($sql);
         return $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    /**
-     * Devuelve un producto por su ID.
-     */
     public function obtenerPorId(int $id): array {
-        $stmt = $this->db->prepare("
-          SELECT id_producto, nombre_producto, descripcion_producto, id_marca, imagen_producto
-          FROM productos
-          WHERE id_producto = ?
-        ");
+        $stmt = $this->db->prepare(
+            "SELECT id_producto, nombre_producto, descripcion_producto,
+                    id_marca, imagen_producto, imagen_blob
+               FROM productos
+              WHERE id_producto = ?"
+        );
+        if (!$stmt) throw new Exception('Prepare failed: ' . $this->db->error);
         $stmt->bind_param('i', $id);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc() ?: [];
     }
 
-    /**
-     * Crea un nuevo producto.
-     */
-    // ...
-    public function crear(string $nombre, string $descripcion, int $idMarca, ?string $imagenUrl, ?string $imagenBin): bool
-    {
+    public function crear(string $nombre, string $descripcion, int $idMarca, ?string $imagenUrl, ?string $imagenBin): bool {
         $sql = "
           INSERT INTO productos
             (nombre_producto, descripcion_producto, id_marca, imagen_producto, imagen_blob)
           VALUES (?, ?, ?, ?, ?)
         ";
         $stmt = $this->db->prepare($sql);
-        if (! $stmt) {
-            throw new \Exception('Prepare failed: ' . $this->db->error);
+        if (!$stmt) {
+            $this->lastError = $this->db->error;
+            return false;
         }
-        // 's','s','i','s','s' – todos strings excepto el int
-        $stmt->bind_param(
-          'ssiss',
-          $nombre,
-          $descripcion,
-          $idMarca,
-          $imagenUrl,
-          $imagenBin  // puede ser null o cadena binaria
-        );
-        return $stmt->execute();
+        $stmt->bind_param('ssiss', $nombre, $descripcion, $idMarca, $imagenUrl, $imagenBin);
+        $res = $stmt->execute();
+        if (!$res) $this->lastError = $stmt->error;
+        return $res;
     }
 
-    public function actualizar(int $id, string $nombre, string $descripcion, int $idMarca, ?string $imagenUrl, ?string $imagenBin): bool
-    {
+    public function actualizar(int $id, string $nombre, string $descripcion, int $idMarca, ?string $imagenUrl, ?string $imagenBin): bool {
         $sql = "
           UPDATE productos
-            SET nombre_producto    = ?,
-                descripcion_producto = ?,
-                id_marca            = ?,
-                imagen_producto     = ?,
-                imagen_blob         = ?
-          WHERE id_producto = ?
+             SET nombre_producto    = ?,
+                 descripcion_producto = ?,
+                 id_marca            = ?,
+                 imagen_producto     = COALESCE(?, imagen_producto),
+                 imagen_blob         = COALESCE(?, imagen_blob)
+           WHERE id_producto = ?
         ";
         $stmt = $this->db->prepare($sql);
-        if (! $stmt) {
-            throw new \Exception('Prepare failed: ' . $this->db->error);
+        if (!$stmt) {
+            $this->lastError = $this->db->error;
+            return false;
         }
-        // 's','s','i','s','s','i'
-        $stmt->bind_param(
-          'ssissi',
-          $nombre,
-          $descripcion,
-          $idMarca,
-          $imagenUrl,
-          $imagenBin,
-          $id
-        );
-        return $stmt->execute();
+        $stmt->bind_param('ssissi', $nombre, $descripcion, $idMarca, $imagenUrl, $imagenBin, $id);
+        $res = $stmt->execute();
+        if (!$res) $this->lastError = $stmt->error;
+        return $res;
     }
 
-    /**
-     * Elimina un producto.
-     */
     public function eliminar(int $id): bool {
         $stmt = $this->db->prepare("DELETE FROM productos WHERE id_producto = ?");
+        if (!$stmt) {
+            $this->lastError = $this->db->error;
+            return false;
+        }
         $stmt->bind_param('i', $id);
-        return $stmt->execute();
+        $res = $stmt->execute();
+        if (!$res) $this->lastError = $stmt->error;
+        return $res;
     }
 }

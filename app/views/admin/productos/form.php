@@ -1,5 +1,5 @@
-<?php
 // admin/productos/form.php
+<?php
 $isEdit = !empty($producto);
 ?>
 <h2 class="mb-4">
@@ -13,22 +13,12 @@ $isEdit = !empty($producto);
 
   <div class="mb-3">
     <label class="form-label">Nombre</label>
-    <input 
-      type="text" 
-      name="nombre" 
-      class="form-control" 
-      required 
-      value="<?= $producto['nombre_producto'] ?? '' ?>"
-    >
+    <input type="text" name="nombre" class="form-control" required value="<?= htmlspecialchars($producto['nombre_producto'] ?? '') ?>">
   </div>
 
   <div class="mb-3">
     <label class="form-label">Descripción</label>
-    <textarea 
-      name="descripcion" 
-      class="form-control" 
-      rows="3"
-    ><?= $producto['descripcion_producto'] ?? '' ?></textarea>
+    <textarea name="descripcion" class="form-control" rows="3"><?= htmlspecialchars($producto['descripcion_producto'] ?? '') ?></textarea>
   </div>
 
   <div class="mb-3">
@@ -36,10 +26,7 @@ $isEdit = !empty($producto);
     <select name="marca" class="form-select" required>
       <option value="">-- Seleccionar marca --</option>
       <?php foreach ($marcas as $m): ?>
-      <option 
-        value="<?= $m['id_marca'] ?>"
-        <?= isset($producto['id_marca']) && $producto['id_marca']==$m['id_marca'] ? 'selected' : '' ?>
-      >
+      <option value="<?= $m['id_marca'] ?>" <?= isset($producto['id_marca']) && $producto['id_marca']==$m['id_marca'] ? 'selected' : '' ?> >
         <?= htmlspecialchars($m['nombre_marca']) ?>
       </option>
       <?php endforeach; ?>
@@ -48,28 +35,16 @@ $isEdit = !empty($producto);
 
   <div class="mb-3">
     <label class="form-label">Imagen (archivo local)</label>
-    <input 
-      type="file" 
-      name="imagen_file" 
-      class="form-control"
-      accept="image/*"
-    >
+    <input type="file" name="imagen_file" class="form-control" accept="image/*">
   </div>
 
   <div class="mb-3">
     <label class="form-label">Imagen (URL o ruta)</label>
-    <input 
-      type="text" 
-      name="imagen" 
-      class="form-control" 
-      value="<?= $producto['imagen_producto'] ?? '' ?>"
-    >
+    <input type="text" name="imagen" class="form-control" value="<?= htmlspecialchars($producto['imagen_producto'] ?? '') ?>">
     <?php if ($isEdit && !empty($producto['imagen_producto'])): ?>
-    <img 
-        src="<?= htmlspecialchars($producto['imagen_producto']) ?>" 
-        style="max-height:100px; margin-top:8px;"
-    >
+    <img src="<?= htmlspecialchars($producto['imagen_producto']) ?>" style="max-height:100px; margin-top:8px;">
     <?php endif; ?>
+  </div>
 
   <div class="d-flex justify-content-end">
     <button class="btn btn-secondary me-2" onclick="history.back(); return false;">Cancelar</button>

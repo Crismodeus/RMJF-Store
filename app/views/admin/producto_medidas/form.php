@@ -42,6 +42,13 @@
            value="<?= htmlspecialchars($medida['costo_producto'] ?? '') ?>">
   </div>
 
+   <div class="mb-3">
+    <label class="form-label"><U></U>nidades del producto</label>
+    <input type="number" step="1" name="unidades"
+           class="form-control" required
+           value="<?= htmlspecialchars($medida['unidades_producto'] ?? '') ?>">
+  </div>
+
   <div class="d-flex justify-content-end">
     <button class="btn btn-secondary me-2"
             onclick="history.back();return false;">

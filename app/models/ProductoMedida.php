@@ -8,7 +8,8 @@ class ProductoMedida extends Model {
              pm.id_producto,
              p.nombre_producto,
              pm.nombre_medida,
-             pm.costo_producto
+             pm.costo_producto,
+             pm.unidades_producto
         FROM producto_medidas pm
         JOIN productos p ON pm.id_producto = p.id_producto
        ORDER BY p.nombre_producto, pm.nombre_medida
@@ -19,7 +20,7 @@ class ProductoMedida extends Model {
 
   public function obtenerPorProducto(int $id_producto): array {
     $stmt = $this->db->prepare("
-      SELECT id_producto_medida, nombre_medida, costo_producto
+      SELECT id_producto_medida, nombre_medida, costo_producto, unidades_producto
         FROM producto_medidas
        WHERE id_producto = ?
     ");
@@ -35,7 +36,8 @@ class ProductoMedida extends Model {
         pm.id_producto,
         p.nombre_producto,
         pm.nombre_medida,
-        pm.costo_producto
+        pm.costo_producto,
+        pm.unidades_producto
       FROM producto_medidas pm
       JOIN productos p ON pm.id_producto = p.id_producto
       WHERE pm.id_producto_medida = ?
@@ -46,23 +48,23 @@ class ProductoMedida extends Model {
   } 
 
 
-  public function crear(int $id_producto, string $medida, float $costo): bool {
+  public function crear(int $id_producto, string $medida, float $costo, float $unidades): bool {
     $stmt = $this->db->prepare("
       INSERT INTO producto_medidas
-        (id_producto, nombre_medida, costo_producto)
-      VALUES (?,?,?)
+        (id_producto, nombre_medida, costo_producto, unidades_producto)
+      VALUES (?,?,?,?)
     ");
-    $stmt->bind_param('isd', $id_producto, $medida, $costo);
+    $stmt->bind_param('isdd', $id_producto, $medida, $costo, $unidades);
     return $stmt->execute();
   }
 
-  public function actualizar(int $id, string $medida, float $costo): bool {
+  public function actualizar(int $id, string $medida, float $costo, float $unidades): bool {
     $stmt = $this->db->prepare("
       UPDATE producto_medidas
-         SET nombre_medida = ?, costo_producto = ?
+         SET nombre_medida = ?, costo_producto = ?, unidades_producto = ?
        WHERE id_producto_medida = ?
     ");
-    $stmt->bind_param('sdi', $medida, $costo, $id);
+    $stmt->bind_param('sddi', $medida, $costo, $unidades, $id);
     return $stmt->execute();
   }
 

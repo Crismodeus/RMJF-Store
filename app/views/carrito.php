@@ -97,7 +97,7 @@ document.getElementById('btnRegistrarOrden').addEventListener('click', function(
     <a href="<?= url('index.php?url=Catalogo/index') ?>" class="btn btn-secondary">
       ← Seguir comprando
     </a>
-    <a href="<?= url('index.php?url=Pago/paypal') ?>" class="btn btn-success">
+    <a href="<?= url('index.php?url=Pago/paypal') ?>" class="btn btn-success" id="btnProcederPago">
         Proceder al Pago →
     </a>
   </div>

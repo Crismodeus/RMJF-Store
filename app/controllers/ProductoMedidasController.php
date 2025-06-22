@@ -24,13 +24,14 @@ class ProductoMedidasController extends Controller {
     $id_producto = (int) ($_POST['producto'] ?? 0);
     $medida      = trim($_POST['medida']  ?? '');
     $costo       = (float)($_POST['costo']   ?? 0);
+    $unidades       = (float)($_POST['unidades']   ?? 0);
 
     $pm = $this->model('ProductoMedida');
     if ($id) {
         // si quieres permitir cambiar de producto, extiende actualizar()
-        $ok = $pm->actualizar($id, $medida, $costo);
+        $ok = $pm->actualizar($id, $medida, $costo, $unidades);
     } else {
-        $ok = $pm->crear($id_producto, $medida, $costo);
+        $ok = $pm->crear($id_producto, $medida, $costo, $unidades);
     }
     $_SESSION['success'] = $ok ? 'Medida guardada.' : 'Error al guardar.';
     header('Location:' . url('index.php?url=ProductoMedidas/index'));

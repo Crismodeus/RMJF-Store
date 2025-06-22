@@ -9,7 +9,7 @@
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>ID</th><th>Producto</th><th>Medida</th><th>Costo</th><th></th>
+      <th>ID</th><th>Producto</th><th>Medida</th><th>Costo</th><th>Stock</th><th></th>
     </tr>
   </thead>
   <tbody>
@@ -19,6 +19,7 @@
       <td><?= htmlspecialchars($m['nombre_producto']) ?></td>
       <td><?= htmlspecialchars($m['nombre_medida']) ?></td>
       <td>$<?= number_format($m['costo_producto'],2) ?></td>
+      <td><?= number_format($m['unidades_producto'],2) ?></td>
       <td class="text-end">
         <a href="<?= url('index.php?url=ProductoMedidas/form/'.$m['id_producto_medida']) ?>"
            class="btn btn-sm btn-warning">Editar</a>

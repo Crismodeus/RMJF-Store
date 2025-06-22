@@ -102,7 +102,7 @@ class Usuario extends Model {
     /**
     * Crea un nuevo vendedor con contraseña hasheada.
     */
-    public function crearVendedor(string $nombre, string $email, string $password, string $cedula): bool {
+     public function crearVendedor(string $nombre, string $email, string $password, string $cedula): ?string {
         $hash = password_hash($password, PASSWORD_BCRYPT);
         $rol  = 2;
         $stmt = $this->db->prepare("
@@ -111,35 +111,61 @@ class Usuario extends Model {
             VALUES (?, ?, ?, ?, ?)
         ");
         $stmt->bind_param('ssssi', $nombre, $email, $hash, $cedula, $rol);
-        return $stmt->execute();
+        try {
+            $stmt->execute();
+            return null;
+        } catch (\mysqli_sql_exception $e) {
+            if (str_contains($e->getMessage(), 'email_usuario')) {
+                return "Error: El correo electrónico '$email' ya existe.";
+            }
+            if (str_contains($e->getMessage(), 'cedula_usuario')) {
+                return "Error: La cédula '$cedula' ya existe.";
+            }
+            return "Error al crear." . $e->getMessage();
+        }
     }
 
     /**
      * Actualiza un vendedor (rol = 2). Si $password es vacío, no lo modifica.
+     * Retorna null si éxito, o un mensaje de error si falla.
      */
-    public function actualizarVendedor(int $id, string $nombre, string $email, ?string $password, string $cedula): bool {
+    public function actualizarVendedor(int $id, string $nombre, string $email, ?string $password, string $cedula): ?string {
         if ($password !== null && $password !== '') {
             $hash = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = $this->db->prepare("
-                UPDATE usuarios
-                   SET nombre_usuario   = ?,
-                       email_usuario    = ?,
-                       password_usuario = ?,
-                       cedula_usuario   = ?
-                 WHERE id_usuario = ? AND id_rol = 2
-            ");
-            $stmt->bind_param('ssssi', $nombre, $email, $hash, $cedula, $id);
-        } else {
-            $stmt = $this->db->prepare("
+            $sql = "
                 UPDATE usuarios
                    SET nombre_usuario = ?,
-                       email_usuario  = ?,
+                       email_usuario = ?,
+                       password_usuario = ?,
                        cedula_usuario = ?
                  WHERE id_usuario = ? AND id_rol = 2
-            ");
+            ";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param('ssssi', $nombre, $email, $hash, $cedula, $id);
+        } else {
+            $sql = "
+                UPDATE usuarios
+                   SET nombre_usuario = ?,
+                       email_usuario = ?,
+                       cedula_usuario = ?
+                 WHERE id_usuario = ? AND id_rol = 2
+            ";
+            $stmt = $this->db->prepare($sql);
             $stmt->bind_param('sssi', $nombre, $email, $cedula, $id);
         }
-        return $stmt->execute();
+
+        try {
+            $stmt->execute();
+            return null;
+        } catch (\mysqli_sql_exception $e) {
+            if (str_contains($e->getMessage(), 'email_usuario')) {
+                return "Error: El correo electrónico '$email' ya existe.";
+            }
+            if (str_contains($e->getMessage(), 'cedula_usuario')) {
+                return "Error: La cédula '$cedula' ya existe.";
+            }
+            return "Error al actualizar." . $e->getMessage();
+        }
     }
         /**
      * Devuelve todos los vendedores (rol = 2).
