@@ -164,9 +164,19 @@ class Usuario extends Model {
             if (str_contains($e->getMessage(), 'cedula_usuario')) {
                 return "Error: La cédula '$cedula' ya existe.";
             }
-            return "Error al actualizar." . $e->getMessage();
+            //return "Error al actualizar." . $e->getMessage();
         }
     }
+
+     public function eliminarVendedor(int $id): bool {
+        $stmt = $this->db->prepare("
+            DELETE FROM usuarios
+             WHERE id_usuario = ? AND id_rol = 2
+        ");
+        $stmt->bind_param('i', $id);
+        return $stmt->execute();
+    }
+
         /**
      * Devuelve todos los vendedores (rol = 2).
      */
@@ -229,4 +239,42 @@ class Usuario extends Model {
         // 3) No coincide
         return false;
     }
+
+    public function existeEmail(string $email, ?int $excludeId = null): bool {
+        $sql = "SELECT 1 FROM usuarios WHERE email_usuario = ?";
+        if ($excludeId) {
+            $sql .= " AND id_usuario <> ?";
+        }
+        $sql .= " LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        if ($excludeId) {
+            $stmt->bind_param('si', $email, $excludeId);
+        } else {
+            $stmt->bind_param('s', $email);
+        }
+        $stmt->execute();
+        return (bool) $stmt->get_result()->fetch_assoc();
+    }
+
+    /**
+     * ¿Existe ya esta cédula en otro usuario distinto de $excludeId?
+     */
+    public function existeCedula(string $cedula, ?int $excludeId = null): bool {
+        $sql = "SELECT 1 FROM usuarios WHERE cedula_usuario = ?";
+        if ($excludeId) {
+            $sql .= " AND id_usuario <> ?";
+        }
+        $sql .= " LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        if ($excludeId) {
+            $stmt->bind_param('si', $cedula, $excludeId);
+        } else {
+            $stmt->bind_param('s', $cedula);
+        }
+        $stmt->execute();
+        return (bool) $stmt->get_result()->fetch_assoc();
+    }
 }
+

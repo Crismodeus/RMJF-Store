@@ -1,4 +1,4 @@
-// admin/productos/form.php
+
 <?php
 $isEdit = !empty($producto);
 ?>

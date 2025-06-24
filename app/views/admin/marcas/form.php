@@ -20,8 +20,7 @@ $isEdit = !empty($marca);
 
   <div class="mb-3">
     <label class="form-label">Logo (archivo local)</label>
-    <input type="file" name="logo_file" class="form-control" accept="image/*"
-    value="<?= $marca['imagen_blob'] ?? '' ?>">
+    <input type="file" name="logo_file" class="form-control" accept="image/*">
   </div>
 
   <div class="mb-3">

@@ -1,4 +1,4 @@
-<?php // admin/marcas/index.php ?>
+<?php ?>
 <h2 class="mb-4">🏷️ Gestión de Marcas</h2>
 
 <?php if (isset($_SESSION['success'])): ?>

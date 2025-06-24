@@ -110,6 +110,7 @@ foreach ($productos as $p) {
                   name="cantidad" 
                   value="1" 
                   min="1" 
+                  max="10000" 
                   class="form-control"
                 >
                 <button class="btn btn-success">Agregar</button>

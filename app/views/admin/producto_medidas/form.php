@@ -43,7 +43,7 @@
   </div>
 
    <div class="mb-3">
-    <label class="form-label"><U></U>nidades del producto</label>
+    <label class="form-label"><U></U>Unidades del producto</label>
     <input type="number" step="1" name="unidades"
            class="form-control" required
            value="<?= htmlspecialchars($medida['unidades_producto'] ?? '') ?>">

@@ -1,46 +1,36 @@
-<?php // admin/clientes/form.php
-$isEdit = !empty($cliente);
+<?php
+$isEdit = isset($editId);
 ?>
-<h2 class="mb-4">
-  <?= $isEdit ? '✏️ Editar Cliente' : '➕ Nuevo Cliente' ?>
-</h2>
-
+<h2 class="mb-4"><?= !empty($usuario['id_usuario']) ? '✏️ Editar Cliente' : '➕ Nuevo Cliente' ?></h2>
+<?php if(!empty($errors)): ?>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+    <?php foreach($errors as $e): ?>
+      <li><?= htmlspecialchars($e) ?></li>
+    <?php endforeach; ?>
+    </ul>
+  </div>
+<?php endif; ?>
 <form action="<?= url('index.php?url=Clientes/guardar') ?>" method="POST">
-  <?php if ($isEdit): ?>
-    <input type="hidden" name="id" value="<?= $cliente['id_usuario'] ?>">
+  <?php if(!empty($usuario['id_usuario'])): ?>
+    <input type="hidden" name="id" value="<?= $usuario['id_usuario'] ?>">
   <?php endif; ?>
-
   <div class="mb-3">
-    <label class="form-label">Nombre</label>
-    <input type="text" name="nombre" class="form-control" required
-      value="<?= $cliente['nombre_usuario'] ?? '' ?>">
+    <label>Nombre</label>
+    <input type="text" name="nombre" class="form-control" required value="<?= htmlspecialchars($usuario['nombre_usuario'] ?? '') ?>">
   </div>
-
   <div class="mb-3">
-    <label class="form-label">Email</label>
-    <input type="email" name="email" class="form-control" required
-      value="<?= $cliente['email_usuario'] ?? '' ?>">
+    <label>Email</label>
+    <input type="email" name="email" class="form-control" required value="<?= htmlspecialchars($usuario['email_usuario'] ?? '') ?>">
   </div>
-
   <div class="mb-3">
-    <label class="form-label">Cédula</label>
-    <input type="text" name="cedula" class="form-control" required
-      value="<?= $cliente['cedula_usuario'] ?? '' ?>">
+    <label>Cédula</label>
+    <input type="text" name="cedula" class="form-control" required value="<?= htmlspecialchars($usuario['cedula_usuario'] ?? '') ?>">
   </div>
-
   <div class="mb-3">
-    <label class="form-label">
-      <?= $isEdit ? 'Cambiar contraseña (opcional)' : 'Contraseña' ?>
-    </label>
-    <input type="password" name="password" class="form-control"
-      <?= $isEdit ? '' : 'required' ?>>
+    <label><?= empty($usuario['id_usuario']) ? 'Contraseña' : 'Nueva Contraseña (opcional)' ?></label>
+    <input type="password" name="password" class="form-control" <?= empty($usuario['id_usuario']) ? 'required' : '' ?>>
   </div>
-
-  <div class="d-flex justify-content-end">
-    <button class="btn btn-secondary me-2"
-      onclick="history.back();return false;">Cancelar</button>
-    <button type="submit" class="btn btn-success">
-      <?= $isEdit ? 'Actualizar' : 'Crear' ?>
-    </button>
-  </div>
+  <button type="submit" class="btn btn-success">Guardar</button>
+  <a href="<?= url('index.php?url=Clientes/index') ?>" class="btn btn-secondary ms-2">Cancelar</a>
 </form>

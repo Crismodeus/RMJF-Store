@@ -32,11 +32,11 @@ class ProductosController extends Controller {
         if (!empty($_FILES['imagen_file']['tmp_name']) && $_FILES['imagen_file']['error'] === UPLOAD_ERR_OK) {
             $imagenBin = file_get_contents($_FILES['imagen_file']['tmp_name']);
         }
-        $imagenUrl = trim($_POST['imagen'] ?? '') ?: null;
-        if ($id && $imagenBin === null && $imagenUrl === null) {
+        $imagenUrl = trim($_POST['imagen'] ?? '') ?: '';
+        if ($id && $imagenBin === '' && $imagenUrl === '') {
             $existing = $this->model('Producto')->obtenerPorId($id);
-            $imagenUrl = $existing['imagen_producto'] ?? null;
-            $imagenBin = $existing['imagen_blob']     ?? null;
+            $imagenUrl = $existing['imagen_producto'] ?? '';
+            $imagenBin = $existing['imagen_blob']     ?? '';
         }
 
         $prodModel = $this->model('Producto');
