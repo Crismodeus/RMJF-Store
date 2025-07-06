@@ -18,12 +18,33 @@ class CarritoController extends Controller {
 
     public function agregar() {
         // Recogemos datos POST
-        $id     = (int) ($_POST['id']      ?? 0);           // id_producto_medida
+
+        $id          = (int) ($_POST['id']         ?? 0); // id_producto_medida
+        $prodId      = (int) ($_POST['product_id'] ?? 0); // identificador de producto
         $prod   = trim($_POST['producto']  ?? '');
         $medida = trim($_POST['medida']    ?? '');
         $precio = (float) ($_POST['precio'] ?? 0);
         $cant   = max(1, (int) ($_POST['cantidad'] ?? 1));
-
+        // 👉 VALIDACIÓN STOCK 
+        $pmModel = $this->model('ProductoMedida');
+        $medidas = $pmModel->obtenerPorProducto($prodId);
+        $stock   = 0;
+        foreach ($medidas as $m) {
+          if ((int)$m['id_producto_medida'] === $id) {
+            $stock = (int)$m['unidades_producto'];
+            break;
+          } 
+        }
+        if ($cant > $stock) {
+          $_SESSION['error'] = "No hay suficientes unidades. Sólo quedan {$stock}.";
+          header('Location: ' . url('index.php?url=Catalogo/index'));
+          exit;
+        }
+        if ($cant > 10000) {
+          $_SESSION['error'] = 'No puedes pedir más de 10 000 unidades.';
+          header('Location: ' . url('index.php?url=Catalogo/index'));
+          exit;
+        }
         // Inicializamos carrito si no existe
         if (! isset($_SESSION['carrito'])) {
             $_SESSION['carrito'] = [];

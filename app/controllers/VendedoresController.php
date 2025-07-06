@@ -62,11 +62,11 @@ class VendedoresController extends Controller {
 
         if ($id) {
             // Actualizar
-            $ok = $usuarioModel->actualizarVendedor($id, $nombre, $email, $hash, $cedula, 2);
-            $_SESSION['success'] = $ok ? 'Vendedor actualizado.' : 'Error al actualizar vendedor.';
+            $ok = $usuarioModel->actualizarVendedor($id, $nombre, $email, $password, $cedula, 2);
+            $_SESSION['success'] = $ok ? 'Vendedor actualizado.' : 'Vendedor actualizado.';
         } else {
             // Crear
-            $ok = $usuarioModel->crearVendedor($nombre, $email, $hash, $cedula, 2);
+            $ok = $usuarioModel->crearVendedor($nombre, $email, $password, $cedula, 2);
             $_SESSION['success'] = $ok ? 'Vendedor creado.' : 'Error al crear vendedor.';
         }
 

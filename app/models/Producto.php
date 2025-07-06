@@ -52,35 +52,50 @@ class Producto extends Model {
      * @return array
      */
     public function obtenerProductosPorEspecialidad(int $idEsp, ?int $idMarca = null): array {
-        $sql = "
-            SELECT 
-              p.id_producto,
-              p.nombre_producto,
-              p.descripcion_producto,
-              p.id_marca,
-              m.nombre_marca,
-              m.imagen_marca,
-              pm.id_producto_medida,
-              pm.nombre_medida,
-              pm.costo_producto,
-              p.imagen_producto
-            FROM productos_especialidades pe
-            JOIN productos p ON pe.id_producto = p.id_producto
-            JOIN marcas m    ON p.id_marca = m.id_marca
-            JOIN producto_medidas pm ON pm.id_producto = p.id_producto
-            WHERE pe.id_especialidad = ?
-        ";
-        if ($idMarca) {
-            $sql .= " AND p.id_marca = ?";
-        }
-        $stmt = $this->db->prepare($sql);
-        if ($idMarca) {
-            $stmt->bind_param('ii', $idEsp, $idMarca);
-        } else {
-            $stmt->bind_param('i', $idEsp);
-        }
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // 1) SQL corregido, incluye unidades_producto AS stock
+    $sql = "
+        SELECT 
+          p.id_producto,
+          p.nombre_producto,
+          p.descripcion_producto,
+          p.id_marca,
+          p.imagen_producto,
+          p.imagen_blob           AS imagen_blob,
+          m.nombre_marca,
+          m.imagen_marca,
+          m.imagen_blob       AS imagen_marca_blob,
+          pm.id_producto_medida,
+          pm.nombre_medida,
+          pm.costo_producto,
+          pm.unidades_producto             AS stock
+        FROM productos_especialidades pe
+        JOIN productos p     ON pe.id_producto        = p.id_producto
+        JOIN marcas m        ON p.id_marca            = m.id_marca
+        JOIN producto_medidas pm ON pm.id_producto    = p.id_producto
+        WHERE pe.id_especialidad = ?
+    ";
+    // 2) Si hay filtro de marca, añadimos otro placeholder
+    if ($idMarca) {
+        $sql .= " AND p.id_marca = ?";
+    }
+    $sql .= " ORDER BY p.nombre_producto, pm.nombre_medida";
+
+    // 3) Preparamos y comprobamos errores
+    $stmt = $this->db->prepare($sql);
+    if (! $stmt) {
+        throw new \Exception("Error en SQL (obtenerProductosPorEspecialidad): " . $this->db->error);
+    }
+
+    // 4) Ligamos parámetros según corresponda
+    if ($idMarca) {
+        $stmt->bind_param('ii', $idEsp, $idMarca);
+    } else {
+        $stmt->bind_param('i', $idEsp);
+    }
+
+    // 5) Ejecutamos y devolvemos resultado
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     public function getLastError(): string {

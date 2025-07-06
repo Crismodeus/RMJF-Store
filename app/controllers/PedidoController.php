@@ -1,6 +1,7 @@
 <?php
 // app/controllers/PedidoController.php
 class PedidoController extends Controller {
+    
     public function confirmar() {
         // 1) Cargamos carrito y usuario
         $carrito = $_SESSION['carrito'] ?? [];
@@ -58,7 +59,7 @@ class PedidoController extends Controller {
         unset($_SESSION['carrito']);
 
         // 6) Redirigimos al pago PayPal
-        header('Location: ' . url("index.php?url=Pago/paypal&pedido=$idPedido"));
+        header('Location: ' . url("index.php?url=Pago/paypal&pedido=/$idPedido"));
         exit;
     }
 
@@ -70,28 +71,6 @@ class PedidoController extends Controller {
         $this->view('pedido/misPedidos', [
             'pedidos' => $pedidos
         ]);
-    }
-
-    /**
-     * Lista de pedidos pendientes de pago.
-     */
-    public function porPagar() {
-    $userId   = $_SESSION['usuario']['id_usuario'];
-    $pedModel = $this->model('Pedido');
-
-    // 1) Trae los pedidos Pendiente
-    $pedidos = $pedModel->obtenerPedidos($userId, 'Pendiente');
-
-    // 2) Para cada pedido, añade sus detalles
-    foreach ($pedidos as &$p) {
-        $p['detalles'] = $pedModel->obtenerDetalles((int)$p['id_pedido']);
-    }
-    unset($p);
-
-    // 3) Renderiza la vista con pedidos + detalles
-    $this->view('pedido/porPagar', [
-        'pedidos' => $pedidos
-    ]);
     }
 
     public function verDetalles($idPedido) {
@@ -156,6 +135,28 @@ class PedidoController extends Controller {
         $stmt->execute();
         $res = $stmt->get_result()->fetch_assoc();
         return $res ?: null;
+    }
+
+     /**
+     * Lista de pedidos pendientes de pago.
+     */
+    public function porPagar() {
+    $userId   = $_SESSION['usuario']['id_usuario'];
+    $pedModel = $this->model('Pedido');
+
+    // 1) Trae los pedidos Pendiente
+    $pedidos = $pedModel->obtenerPedidos($userId, 'Pendiente');
+
+    // 2) Para cada pedido, añade sus detalles
+    foreach ($pedidos as &$p) {
+        $p['detalles'] = $pedModel->obtenerDetalles((int)$p['id_pedido']);
+    }
+    unset($p);
+
+    // 3) Renderiza la vista con pedidos + detalles
+    $this->view('pedido/porPagar', [
+        'pedidos' => $pedidos
+    ]);
     }
 
 }

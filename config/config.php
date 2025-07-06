@@ -15,3 +15,5 @@ if (! function_exists('url')) {
         return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
     }
 }
+
+

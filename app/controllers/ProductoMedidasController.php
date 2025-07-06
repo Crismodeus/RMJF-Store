@@ -44,4 +44,5 @@ class ProductoMedidasController extends Controller {
     header('Location: ' . url('index.php?url=ProductoMedidas/index'));
     exit;
   }
+
 }

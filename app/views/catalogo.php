@@ -43,15 +43,19 @@ foreach ($productos as $p) {
             'descripcion'     => $p['descripcion_producto'],
             'id_marca'        => $p['id_marca'],
             'nombre_marca'    => $p['nombre_marca'],
-            'imagen_marca'    => $p['imagen_marca'],
+            'imagen_producto'    => $p['imagen_producto'],   // URL
+            'imagen_blob'        => $p['imagen_blob'],       // BLOB
+            'imagen_marca'       => $p['imagen_marca'],      // URL
+            'imagen_marca_blob'  => $p['imagen_marca_blob'], // BLOB 
             'imagen_producto' => $p['imagen_producto'],
-            'medidas'         => []
+            'medidas'         => [],
         ];
     }
     $agrupados[$pid]['medidas'][] = [
         'id_medida' => $p['id_producto_medida'],
         'nombre'    => $p['nombre_medida'],
         'precio'    => $p['costo_producto'],
+        'stock'     => $p['stock'], 
     ];
 }
 ?>
@@ -60,24 +64,46 @@ foreach ($productos as $p) {
   <div class="row">
     <?php foreach ($agrupados as $prod): ?>
       <div class="col-md-4 mb-4">
+        <?php
+        // Imagen del producto
+        if (!empty($prod['imagen_blob'])) {
+          $srcProducto = 'data:image/jpeg;base64,' . base64_encode($prod['imagen_blob']);
+        } elseif (!empty($prod['imagen_producto'])) {
+          $srcProducto = filter_var($prod['imagen_producto'], FILTER_VALIDATE_URL)
+            ? htmlspecialchars($prod['imagen_producto'])
+            : url('public/img/productos/' . $prod['imagen_producto']);
+        } else {
+          $srcProducto = url('public/img/default-producto.png');
+        }
+
+        // Imagen de la marca
+        if (!empty($prod['imagen_marca_blob'])) {
+          $srcMarca = 'data:image/png;base64,' . base64_encode($prod['imagen_marca_blob']);
+        } elseif (!empty($prod['imagen_marca'])) {
+          $srcMarca = filter_var($prod['imagen_marca'], FILTER_VALIDATE_URL)
+            ? htmlspecialchars($prod['imagen_marca'])
+            : url('public/img/marcas/' . $prod['imagen_marca']);
+        } else {
+          $srcMarca = url('public/img/default-marca.png');
+        }
+        ?>
         <div class="card h-100">
 
           <!-- Logo de la marca -->
           <div class="text-center mt-2">
             <img 
-              src="<?= url('public/img/marcas/' . $prod['imagen_marca']) ?>" 
+              src="<?= $srcMarca ?>" 
               alt="<?= htmlspecialchars($prod['nombre_marca']) ?>" 
-              style="max-height:40px;"
+              style="max-height:30px;"
             >
           </div>
 
           <!-- Imagen del producto -->
           <img 
-            src="<?= url('public/img/productos/' . $prod['imagen_producto']) ?>" 
-            class="card-img-top" 
+            src="<?= $srcProducto ?>" 
+            class="card-img-top thumbnail-product"
             alt="<?= htmlspecialchars($prod['nombre']) ?>"
           >
-
           <div class="card-body d-flex flex-column">
             <h5 class="card-title"><?= htmlspecialchars($prod['nombre']) ?></h5>
             <p class="card-text"><?= htmlspecialchars($prod['descripcion']) ?></p>
@@ -90,8 +116,10 @@ foreach ($productos as $p) {
                   <option 
                     value="<?= $m['id_medida'] ?>" 
                     data-precio="<?= $m['precio'] ?>"
-                  >
-                    <?= htmlspecialchars($m['nombre']) ?> (<?= '$'.number_format($m['precio'],2) ?>)
+                    data-stock="<?= $m['stock'] ?>"     
+                 >
+                    <?= htmlspecialchars($m['nombre']) ?>
+                    (<?= '$'.number_format($m['precio'], 2) ?> — <?= $m['stock'] ?> disponibles)
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -103,6 +131,7 @@ foreach ($productos as $p) {
               <input type="hidden" name="producto" value="<?= htmlspecialchars($prod['nombre']) ?>">
               <input type="hidden" name="medida"  id="input_medida_<?= $prod['id_producto'] ?>">
               <input type="hidden" name="precio"  id="input_precio_<?=  $prod['id_producto'] ?>">
+              <input type="hidden" name="product_id" value="<?= $prod['id_producto'] ?>">
 
               <div class="input-group">
                 <input 
@@ -119,22 +148,52 @@ foreach ($productos as $p) {
 
             <!-- Script inline para sincronizar inputs -->
             <script>
-            (function() {
-              const sel = document.getElementById('medida_<?= $prod['id_producto'] ?>');
-              const inId      = document.getElementById('input_id_<?=    $prod['id_producto'] ?>');
-              const inMedida  = document.getElementById('input_medida_<?= $prod['id_producto'] ?>');
-              const inPrecio  = document.getElementById('input_precio_<?=  $prod['id_producto'] ?>');
+              (function() {
+                const sel        = document.getElementById('medida_<?= $prod['id_producto'] ?>');
+                const inId       = document.getElementById('input_id_<?= $prod['id_producto'] ?>');
+                const inMedida   = document.getElementById('input_medida_<?= $prod['id_producto'] ?>');
+                const inPrecio   = document.getElementById('input_precio_<?= $prod['id_producto'] ?>');
+                const form       = inId.closest('form');
+                const inCantidad = form.querySelector('input[name="cantidad"]');
 
-              function actualizar() {
-                const o = sel.options[sel.selectedIndex];
-                inId.value     = o.value;
-                inMedida.value = o.text;
-                inPrecio.value = o.dataset.precio;
-              }
-              sel.addEventListener('change', actualizar);
-              actualizar();
-            })();
-            </script>
+                function actualizar() {
+                  const o = sel.options[sel.selectedIndex];
+                  const stock = parseInt(o.dataset.stock || '10000', 10);
+
+                  inId.value       = o.value;
+                  inMedida.value   = o.text;
+                  inPrecio.value   = o.dataset.precio;
+                  inCantidad.max   = Math.min(stock, 10000);
+                  inCantidad.placeholder = 'Máx: ' + Math.min(stock, 10000);
+                }
+
+                sel.addEventListener('change', actualizar);
+                actualizar();
+                
+               // Antes de enviar, validamos contra el stock REAL
+                form.addEventListener('submit', function(e) {
+                  const o     = sel.options[sel.selectedIndex];
+                  const stock = parseInt(o.dataset.stock || '0', 10);
+                  const cant  = parseInt(inCantidad.value, 10) || 0;
+
+                  if (cant < 1 || cant > stock) {
+                    e.preventDefault();
+                    // si no existe ya la alerta, la creamos
+                    let alerta = form.querySelector('.stock-error');
+                    if (!alerta) {
+                      alerta = document.createElement('div');
+                      alerta.className = 'alert alert-danger stock-error mt-2';
+                      form.prepend(alerta);
+                    }
+                    alerta.textContent = 
+                      cant < 1
+                        ? 'La cantidad debe ser al menos 1.'
+                        : `No hay stock suficiente. Quedan ${stock} unidades.`;
+                    return false;
+                  }
+                });
+               })();
+             </script>
 
           </div>
         </div>

@@ -62,16 +62,22 @@ class ClientesController extends Controller {
             $hash = $usuarioModel->obtenerPorId($id)['password_usuario'] ?? '';
         }
         if ($id) {
-            $ok = $usuarioModel->actualizar($id, $nombre, $email, $hash, $cedula, 3);
+            $ok = $usuarioModel->actualizar($id, $nombre, $email, $password, $cedula, 3);
             $_SESSION['success'] = $ok ? 'Cliente actualizado.' : 'Error al actualizar cliente.';
         } else {
-            $ok = $usuarioModel->crear($nombre, $email, $hash, $cedula, 3);
+            $ok = $usuarioModel->crear($nombre, $email, $password, $cedula, 3);
             $_SESSION['success'] = $ok ? 'Cliente creado.' : 'Error al crear cliente.';
         }
         header('Location:' . url('index.php?url=Clientes/index'));
         exit;
     }
 
+    public function eliminar(int $id) {
+        $ok = $this->model('Usuario')->eliminar($id);
+        $_SESSION['success'] = $ok ? 'Cliente eliminado.' : 'Error al eliminar.';
+        header('Location: ' . url('index.php?url=Clientes/index'));
+        exit;
+    }
 
     private function validarCedulaEcuador(string $c): bool {
         $digits = str_split($c);
@@ -87,10 +93,4 @@ class ClientesController extends Controller {
         return $digito === (int)$digits[9];
     }
 
-    public function eliminar(int $id) {
-        $ok = $this->model('Usuario')->eliminar($id);
-        $_SESSION['success'] = $ok ? 'Cliente eliminado.' : 'Error al eliminar.';
-        header('Location: ' . url('index.php?url=Clientes/index'));
-        exit;
-    }
 }

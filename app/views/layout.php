@@ -27,6 +27,20 @@ if ($_SESSION['usuario']['id_rol'] === 3): ?>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+  /* Para fotos de producto (p. ej. en catálogo/card) */
+  .thumbnail-product {
+    width: 150px;              /* ancho fijo */
+    height: 150px;             /* alto fijo */
+    object-fit: contain;       /* ajusta la imagen completa, no la recorta */
+    background-color: #ffffff; /* fondo blanco para rellenar huecos */
+    border-radius: 8px;        /* esquinas redondeadas, pon el radio que prefieras */
+    display: block;
+    margin: 0 auto;            /* centrar */
+    padding: 8px;              /* opcional: crea un “margen interior” */
+    box-shadow: 0 0 4px rgba(0,0,0,0.1);
+  }
+  </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -84,12 +98,15 @@ if ($_SESSION['usuario']['id_rol'] === 3): ?>
                   <li><h6 class="dropdown-header">Reportes</h6></li>
                   <li><a class="dropdown-item" href="<?= url('index.php?url=Reportes/mes') ?>">Ventas por Mes</a></li>
                   <li><a class="dropdown-item" href="<?= url('index.php?url=Reportes/producto') ?>">Ventas por Producto</a></li>
-                  <li><a class="dropdown-item" href="<?= url('index.php?url=Reportes/especialidad') ?>">Ventas por Especialidad</a></li>
                   <li><a class="dropdown-item" href="<?= url('index.php?url=Reportes/vendedor') ?>">Ventas por Vendedor</a></li>
                 <?php endif; ?>
               <?php endif; ?>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="<?= url('index.php?url=Login/logout') ?>">Cerrar Sesión</a></li>
+              <li>
+              <a class="dropdown-item" href="<?= url('index.php?url=Login/logout') ?>">
+                Cerrar Sesión
+              </a>
+            </li>
             </ul>
           </li>
 

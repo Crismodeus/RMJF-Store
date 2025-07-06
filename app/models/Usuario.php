@@ -168,7 +168,7 @@ class Usuario extends Model {
         }
     }
 
-     public function eliminarVendedor(int $id): bool {
+    public function eliminarVendedor(int $id): bool {
         $stmt = $this->db->prepare("
             DELETE FROM usuarios
              WHERE id_usuario = ? AND id_rol = 2
@@ -213,31 +213,35 @@ class Usuario extends Model {
         return $stmt->get_result()->fetch_assoc() ?: [];
     }
 
-    public function verificarCredenciales(string $email, string $password)
-    {
-        // 1) Buscamos al usuario por email
+    public function verificarCredenciales(string $email, string $password): ?array {
+        // 1) Recupera el usuario por email
         $stmt = $this->db->prepare("
             SELECT 
-              id_usuario, 
-              nombre_usuario, 
-              password_usuario, 
-              id_rol
+            id_usuario,
+            nombre_usuario,
+            email_usuario,
+            password_usuario,
+            cedula_usuario,
+            id_rol
             FROM usuarios
             WHERE email_usuario = ?
+            AND id_rol IN (1,2,3)      -- o los roles que quieras permitir
+            LIMIT 1
         ");
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
 
-        // 2) Si existe y la contraseña batea con el hash
+        $stmt->close();
+
+        // 2) Si existe y password_verify pasa, lo devolvemos (sin el hash)
         if ($user && password_verify($password, $user['password_usuario'])) {
-            // Quítale el hash antes de devolverlo
             unset($user['password_usuario']);
             return $user;
         }
 
-        // 3) No coincide
-        return false;
+        // 3) En cualquier otro caso, null
+        return null;
     }
 
     public function existeEmail(string $email, ?int $excludeId = null): bool {

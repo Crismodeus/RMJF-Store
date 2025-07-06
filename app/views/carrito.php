@@ -1,52 +1,7 @@
 <?php
 // app/views/carrito.php
+$rol = $_SESSION['usuario']['id_rol'] ?? 0;
 ?>
-<?php $rol = $_SESSION['usuario']['id_rol'] ?? 0; ?>
-
-<!-- … listado de ítems … -->
-<div class="d-flex justify-content-end mt-4">
-  <?php if (in_array($rol, [1,2], true)): ?>
-    <!-- Admin/Vendedor: botón Registrar Orden -->
-    <button id="btnRegistrarOrden" class="btn btn-success">
-      Registrar Orden
-    </button>
-  <?php else: ?>
-    <!-- Cliente: flujo PayPal -->
-    <div id="paypal-button-container"></div>
-  <?php endif; ?>
-</div>
-
-<?php if (in_array($rol, [1,2], true)): ?>
-<script>
-document.getElementById('btnRegistrarOrden').addEventListener('click', function(e) {
-  e.target.disabled = true;
-  fetch('index.php?url=Carrito/registrar', { method: 'POST' })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert('✅ Pedido registrado con éxito (ID ' + data.idPedido + ')');
-        window.location.href = 'index.php?url=Dashboard/index';
-      } else {
-        alert('❌ ' + data.error);
-        e.target.disabled = false;
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('❌ Error de red. Intenta de nuevo.');
-      e.target.disabled = false;
-    });
-});
-</script>
-<?php else: ?>
-<!-- Aquí carga tu SDK de PayPal y el script paypal.Buttons(...) como antes -->
-<script src="https://www.paypal.com/sdk/js?client-id=TU_CLIENT_ID&currency=USD"></script>
-<script>
-  paypal.Buttons({ /* createOrder, onApprove, onError */ })
-        .render('#paypal-button-container');
-</script>
-<?php endif; ?>
-
 <h2 class="mb-4">🛒 Tu Carrito</h2>
 
 <?php if (isset($_SESSION['success'])): ?>
@@ -62,29 +17,24 @@ document.getElementById('btnRegistrarOrden').addEventListener('click', function(
   <table class="table table-striped align-middle">
     <thead>
       <tr>
-        <th>Producto</th>
-        <th>Medida</th>
-        <th>Cantidad</th>
-        <th>Precio unidad</th>
-        <th>Subtotal</th>
-        <th></th>
+        <th>Producto</th><th>Medida</th><th>Cantidad</th><th>Precio unidad</th><th>Subtotal</th><th></th>
       </tr>
     </thead>
     <tbody>
       <?php foreach ($carrito as $item): ?>
-        <tr>
-          <td><?= htmlspecialchars($item['producto']) ?></td>
-          <td><?= htmlspecialchars($item['medida']) ?></td>
-          <td><?= $item['cantidad'] ?></td>
-          <td>$<?= number_format($item['precio'], 2) ?></td>
-          <td>$<?= number_format($item['precio'] * $item['cantidad'], 2) ?></td>
-          <td>
-            <a href="<?= url('index.php?url=Carrito/eliminar/' . $item['id']) ?>"
-               class="btn btn-sm btn-danger"
-               onclick="return confirm('¿Eliminar este artículo?');"
-            >×</a>
-          </td>
-        </tr>
+      <tr>
+        <td><?= htmlspecialchars($item['producto']) ?></td>
+        <td><?= htmlspecialchars($item['medida']) ?></td>
+        <td><?= $item['cantidad'] ?></td>
+        <td>$<?= number_format($item['precio'], 2) ?></td>
+        <td>$<?= number_format($item['precio'] * $item['cantidad'], 2) ?></td>
+        <td>
+          <a href="<?= url('index.php?url=Carrito/eliminar/' . $item['id']) ?>"
+             class="btn btn-sm btn-danger"
+             onclick="return confirm('¿Eliminar este artículo?');"
+          >×</a>
+        </td>
+      </tr>
       <?php endforeach; ?>
       <tr>
         <td colspan="4" class="text-end"><strong>Total:</strong></td>
@@ -93,12 +43,42 @@ document.getElementById('btnRegistrarOrden').addEventListener('click', function(
     </tbody>
   </table>
 
-  <div class="d-flex justify-content-between">
+  <div class="d-flex justify-content-between mt-4">
     <a href="<?= url('index.php?url=Catalogo/index') ?>" class="btn btn-secondary">
       ← Seguir comprando
     </a>
-    <a href="<?= url('index.php?url=Pago/paypal') ?>" class="btn btn-success" id="btnProcederPago">
+
+    <?php if (in_array($rol, [1,2], true)): ?>
+      <!-- Admin/Vendedor: registra la orden sin PayPal -->
+      <button id="btnRegistrarOrden" class="btn btn-success">Registrar Orden</button>
+    <?php else: ?>
+      <!-- Cliente: dispara el modal de PayPal -->
+      <a href="<?= url('index.php?url=Pago/paypal') ?>" class="btn btn-primary">
         Proceder al Pago →
-    </a>
+      </a>
+    <?php endif; ?>
   </div>
+
+  <?php if (in_array($rol, [1,2], true)): ?>
+    <script>
+      document.getElementById('btnRegistrarOrden').addEventListener('click', function(e) {
+        e.target.disabled = true;
+        fetch('<?= url('index.php?url=Carrito/registrar') ?>', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              alert('✅ Pedido registrado con éxito (ID ' + data.idPedido + ')');
+              window.location.href = '<?= url('index.php?url=Dashboard/index') ?>';
+            } else {
+              alert('❌ ' + data.error);
+              e.target.disabled = false;
+            }
+          })
+          .catch(_ => {
+            alert('❌ Error de red. Intenta de nuevo.');
+            e.target.disabled = false;
+          });
+      });
+    </script>
+  <?php endif; ?>
 <?php endif; ?>

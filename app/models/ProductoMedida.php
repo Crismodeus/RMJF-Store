@@ -75,4 +75,13 @@ class ProductoMedida extends Model {
     $stmt->bind_param('i', $id);
     return $stmt->execute();
   }
+
+  public function actualizarStock(int $idMedida, int $delta): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE producto_medidas SET unidades_producto = unidades_producto + ? WHERE id_producto_medida = ?"
+        );
+        $stmt->bind_param('ii', $delta, $idMedida);
+        return $stmt->execute();
+    }
 }
