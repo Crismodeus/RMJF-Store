@@ -3,7 +3,6 @@ class CatalogoController extends Controller {
     public function index() {
         $productoModel  = $this->model('Producto');
         $especialidades = $productoModel->obtenerEspecialidades();
-
         $idEsp   = isset($_GET['especialidad']) ? (int) $_GET['especialidad'] : null;
         $marcas  = $idEsp ? $productoModel->obtenerMarcasPorEspecialidad($idEsp) : [];
         $idMarca = isset($_GET['marca'])         ? (int) $_GET['marca']         : null;

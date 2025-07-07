@@ -51,4 +51,4 @@
   </tbody>
 </table>
 <br>
-<button class="btn btn-secondary me-2" onclick="history.back(); return false;">Regresar</button>
+<button class="btn btn-secondary me-2" onclick="window.location.href='<?= url('index.php?url=Dashboard/index') ?>'; return false;">Regresar</button>

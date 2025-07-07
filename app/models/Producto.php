@@ -13,7 +13,8 @@ class Producto extends Model {
             SELECT 
               id_especialidad, 
               nombre_especialidad, 
-              foto_especialidad
+              foto_especialidad,
+              foto_blob            -- El BLOB
             FROM especialidades
             ORDER BY nombre_especialidad
         ";

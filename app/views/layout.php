@@ -23,7 +23,7 @@ if ($_SESSION['usuario']['id_rol'] === 3): ?>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>RMJF Ecommerce</title>
+  <title>Tienda RMJF</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -45,13 +45,19 @@ if ($_SESSION['usuario']['id_rol'] === 3): ?>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container">
-    <a class="navbar-brand" href="<?= url('index.php?url=Home/index') ?>">RMJF</a>
+    <a class="nav-link" href="<?= url('index.php?url=Home/index') ?>">
+      <img
+      src="https://es.rmjf.ec/wp-content/uploads/2023/01/Logo_RMJF_normal_Mesa-de-trabajo-1-300x204.png"
+      alt="RMJF"
+      style="height:80px; object-fit:contain;"
+      >
+    </a>
+  
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= url('index.php?url=Home/index') ?>">Inicio</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= url('index.php?url=Catalogo/index') ?>">Especialidades</a></li>
       </ul>
 
