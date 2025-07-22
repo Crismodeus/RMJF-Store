@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1) Sirve peticiones a /css/*  desde public/css/*
+  #    idem para /js/*  → public/js/*
+  #           /img/* → public/img/*
+  RewriteRule ^(css|js|img)/(.*)$ public/$1/$2 [L]
+
+  # 2) Si la ruta no existe como archivo o carpeta, pasa a index.php
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]
+</IfModule>
